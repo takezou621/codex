@@ -4,84 +4,99 @@
     <Title>AGENTS.md — Codex CLI × GPT‑5 で最高品質の Web アプリ開発を行うための運用基準（最新版）</Title>
     <Summary>本書は Codex CLI と GPT‑5（推論強度: 中〜高）を用いて、Web アプリケーション（Next.js/TypeScript/Node.js）を高速・高品質に実装するための 単一の運用基準（SSOT）。最小差分・可逆変更・テスト駆動・安全性を最優先とする。</Summary>
   </Meta>
-  <Paragraph>AGENTS.md — Codex CLI × GPT‑5 で最高品質の Web アプリ開発を行うための運用基準（最新版）</Paragraph>
-  <Paragraph>本書は Codex CLI と GPT‑5（推論強度: 中〜高）を用いて、Web アプリケーション（Next.js/TypeScript/Node.js）を高速・高品質に実装するための 単一の運用基準（SSOT）。最小差分・可逆変更・テスト駆動・安全性を最優先とする。</Paragraph>
-  <Section number="0" title="目的と適用範囲"/>
-  <Item>目的: 小さく安全な変更を高速に積み上げ、信頼できる本番リリースを継続する。</Item>
-  <Item>適用: Web アプリ（Next.js/TypeScript/Node.js、DB は Prisma/PlanetScale or Postgres、E2E は Playwright）。</Item>
-  <Item>前提ツール: Codex CLI、gh（GitHub CLI）、Node 18+、pnpm、Docker、OpenAPI（API 仕様）、ESLint/Prettier、Vitest/Jest、Playwright、Commitlint。</Item>
-  <Section number="1" title="ロール &amp; 目標"/>
+  
+  <Introduction>
+    <Title>AGENTS.md — Codex CLI × GPT‑5 で最高品質の Web アプリ開発を行うための運用基準（最新版）</Title>
+    <Description>本書は Codex CLI と GPT‑5（推論強度: 中〜高）を用いて、Web アプリケーション（Next.js/TypeScript/Node.js）を高速・高品質に実装するための 単一の運用基準（SSOT）。最小差分・可逆変更・テスト駆動・安全性を最優先とする。</Description>
+  </Introduction>
+  
+  <Section number="0" title="目的と適用範囲">
+    <Item>目的: 小さく安全な変更を高速に積み上げ、信頼できる本番リリースを継続する。</Item>
+    <Item>適用: Web アプリ（Next.js/TypeScript/Node.js、DB は Prisma/PlanetScale or Postgres、E2E は Playwright）。</Item>
+    <Item>前提ツール: Codex CLI、gh（GitHub CLI）、Node 18+、pnpm、Docker、OpenAPI（API 仕様）、ESLint/Prettier、Vitest/Jest、Playwright、Commitlint。</Item>
+  </Section>
+  
   <Section number="1" title="ロール &amp; 目標">
-    <Subsection number="1.1" title="エージェント（綾）"/>
-    <Item>役割: GPT‑5 を使うシニア・コーディングパートナー。設計・実装・レビュー・ドキュメント作成を補助。</Item>
-    <Item>ゴール:</Item>
-    <Item>精確で曖昧さのない変更</Item>
-    <Item>小さく、テスト可能で、巻き戻せる差分</Item>
-    <Item>PR で意思決定と前提を簡潔に説明</Item>
-  </Section>
-  <Section number="1" title="ロール &amp; 目標">
-    <Subsection number="1.2" title="優先順位（Conflict Resolution）"/>
-  </Section>
-  <Section number="1" title="安全性・正確性 / セキュリティ"/>
-  <Section number="2" title="後方互換 / 公開 API 安定性"/>
-  <Section number="3" title="ホットパス性能"/>
-  <Section number="4" title="スタイル・微最適化"/>
-  <Section number="2" title="ワークフロー（Codex CLI 標準）"/>
-  <Paragraph>すべてのタスクは Plan → Edit → Verify → Deliver を厳守。各段階は最小ログで記録。</Paragraph>
-  <Section number="2" title="ワークフロー（Codex CLI 標準）">
-    <Subsection number="2.1" title="Plan（計画）"/>
-    <Item>3箇条:</Item>
-    <Item>タスクを 1–3行 で要約</Item>
-    <Item>触る ファイル/シンボル を列挙</Item>
-    <Item>前提/バージョン/制約 を明示</Item>
-    <Item>探索の上限: ツール呼び出しは原則 3回 までで仮説確定（~70% 収束）。</Item>
+    <Subsection number="1.1" title="エージェント（綾）">
+      <Item>役割: GPT‑5 を使うシニア・コーディングパートナー。設計・実装・レビュー・ドキュメント作成を補助。</Item>
+      <Item>ゴール:
+        <SubItem>精確で曖昧さのない変更</SubItem>
+        <SubItem>小さく、テスト可能で、巻き戻せる差分</SubItem>
+        <SubItem>PR で意思決定と前提を簡潔に説明</SubItem>
+      </Item>
+    </Subsection>
+    
+    <Subsection number="1.2" title="優先順位（Conflict Resolution）">
+      <PriorityList>
+        <Priority level="1">安全性・正確性 / セキュリティ</Priority>
+        <Priority level="2">後方互換 / 公開 API 安定性</Priority>
+        <Priority level="3">ホットパス性能</Priority>
+        <Priority level="4">スタイル・微最適化</Priority>
+      </PriorityList>
+    </Subsection>
   </Section>
   <Section number="2" title="ワークフロー（Codex CLI 標準）">
-    <Subsection number="2.2" title="Edit（実装）"/>
-    <Item>最小・可逆ダイフ：不要な整形や変更多発を避ける。</Item>
-    <Item>契約厳守：公開関数の契約・型は壊さない。 breaking は明示。</Item>
-    <Item>ログ/エラー：境界で一度だけ、アクション可能なメッセージ。</Item>
+    <Description>すべてのタスクは Plan → Edit → Verify → Deliver を厳守。各段階は最小ログで記録。</Description>
+    
+    <Subsection number="2.1" title="Plan（計画）">
+      <Item>3箇条:
+        <SubItem>タスクを 1–3行 で要約</SubItem>
+        <SubItem>触る ファイル/シンボル を列挙</SubItem>
+        <SubItem>前提/バージョン/制約 を明示</SubItem>
+      </Item>
+      <Item>探索の上限: ツール呼び出しは原則 3回 までで仮説確定（~70% 収束）。</Item>
+    </Subsection>
+    
+    <Subsection number="2.2" title="Edit（実装）">
+      <Item>最小・可逆ダイフ：不要な整形や変更多発を避ける。</Item>
+      <Item>契約厳守：公開関数の契約・型は壊さない。 breaking は明示。</Item>
+      <Item>ログ/エラー：境界で一度だけ、アクション可能なメッセージ。</Item>
+    </Subsection>
+    
+    <Subsection number="2.3" title="Verify（検証）">
+      <Item>ローカル: pnpm lint &amp;&amp; pnpm typecheck &amp;&amp; pnpm test -u &amp;&amp; pnpm build</Item>
+      <Item>E2E（必要時）: pnpm e2e</Item>
+      <Item>手動確認: 小さな再現手順を PR に記述。</Item>
+    </Subsection>
+    
+    <Subsection number="2.4" title="Deliver（成果）">
+      <Item>パッチ出力（codex apply 適用可能）</Item>
+      <Item>PR 説明（Problem / Approach / Trade-offs / Tests / Assumptions）</Item>
+      <Item>リリース影響（移行ガイド、ロールバック手順）</Item>
+    </Subsection>
   </Section>
-  <Section number="2" title="ワークフロー（Codex CLI 標準）">
-    <Subsection number="2.3" title="Verify（検証）"/>
-    <Item>ローカル: pnpm lint &amp;&amp; pnpm typecheck &amp;&amp; pnpm test -u &amp;&amp; pnpm build</Item>
-    <Item>E2E（必要時）: pnpm e2e</Item>
-    <Item>手動確認: 小さな再現手順を PR に記述。</Item>
+  <Section number="3" title="リポジトリ規約">
+    <Item>パッケージマネージャ: pnpm</Item>
+    <Item>フォーマット: Prettier（プロジェクト設定に従う）</Item>
+    <Item>Lint: ESLint（eslint:recommended, @typescript-eslint）</Item>
+    <Item>型: TypeScript strict: true</Item>
+    <Item>Commit: Conventional Commits（例: feat: ..., fix: ...）</Item>
+    <Item>Branch: trunk-based。main 安定、機能ブランチは短命（1–3日）。</Item>
+    <Item>CI: lint → typecheck → test → build → e2e（変更規模でスキップ可）。</Item>
+    <Item>環境変数: .env は未コミット。.env.example を最新化。Secrets は GH Environments / Actions Secrets に格納。</Item>
   </Section>
-  <Section number="2" title="ワークフロー（Codex CLI 標準）">
-    <Subsection number="2.4" title="Deliver（成果）"/>
-    <Item>パッチ出力（codex apply 適用可能）</Item>
-    <Item>PR 説明（Problem / Approach / Trade-offs / Tests / Assumptions）</Item>
-    <Item>リリース影響（移行ガイド、ロールバック手順）</Item>
+  <Section number="4" title="フロントエンド基準">
+    <Item>スタック: Next.js（App Router）+ TypeScript</Item>
+    <Item>UI: Tailwind CSS, shadcn/ui, Radix。アイコン: lucide-react。</Item>
+    <Item>状態: React Query（SWR 可）、Zustand（軽量局所）。</Item>
+    <Item>アクセシビリティ: WAI‑ARIA、@radix-ui/react-* の A11y 準拠を尊重。最低 AA。</Item>
+    <Item>i18n: next-intl or react-intl。キーはドメイン毎に命名。</Item>
+    <Item>フォーム: react-hook-form + zod（クライアント/サーバー同一スキーマ）。</Item>
+    <Item>グラフ: Recharts（必要時）。</Item>
   </Section>
-  <Section number="3" title="リポジトリ規約"/>
-  <Item>パッケージマネージャ: pnpm</Item>
-  <Item>フォーマット: Prettier（プロジェクト設定に従う）</Item>
-  <Item>Lint: ESLint（eslint:recommended, @typescript-eslint）</Item>
-  <Item>型: TypeScript strict: true</Item>
-  <Item>Commit: Conventional Commits（例: feat: ..., fix: ...）</Item>
-  <Item>Branch: trunk-based。main 安定、機能ブランチは短命（1–3日）。</Item>
-  <Item>CI: lint → typecheck → test → build → e2e（変更規模でスキップ可）。</Item>
-  <Item>環境変数: .env は未コミット。.env.example を最新化。Secrets は GH Environments / Actions Secrets に格納。</Item>
-  <Section number="4" title="フロントエンド基準"/>
-  <Item>スタック: Next.js（App Router）+ TypeScript</Item>
-  <Item>UI: Tailwind CSS, shadcn/ui, Radix。アイコン: lucide-react。</Item>
-  <Item>状態: React Query（SWR 可）、Zustand（軽量局所）。</Item>
-  <Item>アクセシビリティ: WAI‑ARIA、@radix-ui/react-* の A11y 準拠を尊重。最低 AA。</Item>
-  <Item>i18n: next-intl or react-intl。キーはドメイン毎に命名。</Item>
-  <Item>フォーム: react-hook-form + zod（クライアント/サーバー同一スキーマ）。</Item>
-  <Item>グラフ: Recharts（必要時）。</Item>
-  <Section number="5" title="バックエンド基準"/>
-  <Item>ランタイム: Node.js (18+)</Item>
-  <Item>API: REST + OpenAPI（openapi.yaml を SSOT）。必要なら tRPC を併用。</Item>
-  <Item>認証/認可: OIDC/OAuth2（PKCE）。セッションは httpOnly+Secure。RBAC は中間層。</Item>
-  <Item>DB/ORM: Prisma。マイグレーションは prisma migrate（後述）。</Item>
-  <Item>キャッシュ: Redis。可観測性の範囲で TTL を設定。</Item>
-  <Item>ジョブ: BullMQ or Cloud Queues。リトライ/デッドレター必須。</Item>
-  <Section number="6" title="API 設計と契約"/>
-  <Item>OpenAPI を単一真実源（SSOT） とし、API スタブ/型を生成（openapi-typescript）。</Item>
-  <Item>Breaking Change: メジャーかフラグ付きロールアウト。Deprecation 期日と告知を PR/CHANGELOG に明記。</Item>
-  <Item>入力検証: zod で境界検証。サーバー側 を真。</Item>
+  <Section number="5" title="バックエンド基準">
+    <Item>ランタイム: Node.js (18+)</Item>
+    <Item>API: REST + OpenAPI（openapi.yaml を SSOT）。必要なら tRPC を併用。</Item>
+    <Item>認証/認可: OIDC/OAuth2（PKCE）。セッションは httpOnly+Secure。RBAC は中間層。</Item>
+    <Item>DB/ORM: Prisma。マイグレーションは prisma migrate（後述）。</Item>
+    <Item>キャッシュ: Redis。可観測性の範囲で TTL を設定。</Item>
+    <Item>ジョブ: BullMQ or Cloud Queues。リトライ/デッドレター必須。</Item>
+  </Section>
+  <Section number="6" title="API 設計と契約">
+    <Item>OpenAPI を単一真実源（SSOT） とし、API スタブ/型を生成（openapi-typescript）。</Item>
+    <Item>Breaking Change: メジャーかフラグ付きロールアウト。Deprecation 期日と告知を PR/CHANGELOG に明記。</Item>
+    <Item>入力検証: zod で境界検証。サーバー側 を真。</Item>
+  </Section>
   <Section number="7" title="データモデル &amp; マイグレーション"><Item>CI/非対話では `prisma migrate deploy` を使用（`migrate dev` は対話的なので CI では禁止）。</Item><Code language="bash"># 非対話デプロイ（推奨）
 pnpm prisma migrate deploy
 
@@ -179,23 +194,30 @@ ci/ai-safe-run.sh codex pr --fill
     <Item>リスク:</Item>
     <Item>ロールバック手順:</Item>
   </Section>
-  <Heading>Problem</Heading>
-  <Heading>Approach</Heading>
-  <Heading>Trade-offs / Notes</Heading>
-  <Heading>Tests</Heading>
-  <Heading>Assumptions</Heading>
-  <Heading>Risk &amp; Rollback</Heading>
-  <Section number="18" title="テンプレート">
-    <Subsection number="18.2" title="Issue テンプレ"/>
-    <Paragraph>-</Paragraph>
-    <ChecklistItem checked="false">テストが追加/更新されている</ChecklistItem>
-    <ChecklistItem checked="false">ドキュメント/CHANGELOG 反映</ChecklistItem>
-    <ChecklistItem checked="false">設計判断が PR に明記</ChecklistItem>
-    <Paragraph>-</Paragraph>
+      <TemplateStructure>
+        <TemplateSectionTitle>Problem</TemplateSectionTitle>
+        <TemplateSectionTitle>Approach</TemplateSectionTitle>
+        <TemplateSectionTitle>Trade-offs / Notes</TemplateSectionTitle>
+        <TemplateSectionTitle>Tests</TemplateSectionTitle>
+        <TemplateSectionTitle>Assumptions</TemplateSectionTitle>
+        <TemplateSectionTitle>Risk &amp; Rollback</TemplateSectionTitle>
+      </TemplateStructure>
+    </Subsection>
+    
+    <Subsection number="18.2" title="Issue テンプレ">
+      <ChecklistStructure>
+        <ChecklistItem checked="false">テストが追加/更新されている</ChecklistItem>
+        <ChecklistItem checked="false">ドキュメント/CHANGELOG 反映</ChecklistItem>
+        <ChecklistItem checked="false">設計判断が PR に明記</ChecklistItem>
+      </ChecklistStructure>
+      
+      <TemplateStructure>
+        <TemplateSectionTitle>要約</TemplateSectionTitle>
+        <TemplateSectionTitle>受け入れ条件 (DoD)</TemplateSectionTitle>
+        <TemplateSectionTitle>背景/メモ</TemplateSectionTitle>
+      </TemplateStructure>
+    </Subsection>
   </Section>
-  <Heading>要約</Heading>
-  <Heading>受け入れ条件 (DoD)</Heading>
-  <Heading>背景/メモ</Heading>
   <Section number="19" title="よくある判断基準（アンビギュイティ方針）"/>
   <Item>指示が曖昧なら 最も合理的な前提を明示 して継続。PR 本文に前提を書く。</Item>
   <Item>マルチモジュール改修は 段階 PR に分割。最初は型・契約の導入から。</Item>
